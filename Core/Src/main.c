@@ -106,9 +106,10 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  TIM2->CCR1 = 50;
+	  // Code change servo position in about maximum range
 	  htim2.Instance->CCR1 = 200 + i%600;
-	  i = i + 99;
+	  // this variable change position in every half of second
+	  i = i + 70;
 	  HAL_Delay(500);
   }
   /* USER CODE END 3 */
