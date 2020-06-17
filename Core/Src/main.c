@@ -180,14 +180,14 @@ int main(void)
 
 //	  htim1.Instance->CCR1 = 300;// +  360-i%360; // prawy - 280 tył 640 przód
 //	  htim1.Instance->CCR2 = 300;// +  i%360; // prawy - 280 tył 640 przód
-	  if(Roll > 45 || Pitch > 45){
+	  if(abs(Roll) > 45 || abs(Pitch) > 45){
 		  stopRobot();
 	  }
 
-	  leftArm(360*((int)i%2));
-	  rightArm(360*((int)i%2));
-	  stepPerTime = 2;
-	  i = i + 0.001*stepPerTime;
+	  leftArm(110+250*((int)i%2));
+	  rightArm(110+250*(((int)i+1)%2));
+	  stepPerTime = 4;
+	  i = i + 0.01*stepPerTime;
 	  nIndex++;
 
 	  HAL_Delay(10);
