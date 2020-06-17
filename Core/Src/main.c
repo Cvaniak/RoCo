@@ -79,6 +79,8 @@ int16_t pDataX = 0;
 int16_t pDataY = 0;
 int16_t pDataZ = 0;
 int i = 0;
+float Roll ;
+float Pitch;
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -136,14 +138,12 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  	if(nIndex%10==0){
-//			BSP_ACCELERO_GetXYZ(pDataXYZ);
-//			pDataX = pDataX*9/10 + pDataXYZ[0]*1/10;
-//			pDataY = pDataY*9/10 + pDataXYZ[1]*1/10;
-//			pDataZ = pDataZ*9/10 + pDataXYZ[2]*1/10;
-//			Dlugosc = sprintf(DataToSend, "X %d %d %d \r\n", pDataX, pDataY, pDataZ);
-//			CDC_Transmit_FS(DataToSend, Dlugosc);
-//	  	}
+	  	if(nIndex%10==0){
+			BSP_ACCELERO_GetXYZ(pDataXYZ);
+			pDataX = pDataX*9/10 + pDataXYZ[0]*1/10;
+			pDataY = pDataY*9/10 + pDataXYZ[1]*1/10;
+			pDataZ = pDataZ*9/10 + pDataXYZ[2]*1/10;
+	  	}
 //	  	if(HAL_GPIO_ReadPin(BBLUE_GPIO_Port, BBLUE_Pin) && nIndex > 200+lastIndex){
 //			Dlugosc = sprintf(DataToSend, "Y \r\n");
 //			CDC_Transmit_FS(DataToSend, Dlugosc);
@@ -168,8 +168,8 @@ int main(void)
 //	  htim1.Instance->CCR2 = 300;// +  i%360; // prawy - 280 tył 640 przód
 
 
-//      float Roll = atan2(y, z) * 180/M_PI;
-//      float Pitch = atan2(-x, sqrt(y*y + z*z)) * 180/M_PI;
+      Roll = atan2(pDataY, pDataZ) * 180/M_PI;
+      Pitch = atan2(-pDataX, sqrt(pDataY*pDataY + pDataZ*pDataZ)) * 180/M_PI;
 	  leftArm(360*(i%2));
 	  rightArm(360*(i%2));
 
