@@ -32,6 +32,7 @@
 /* USER CODE BEGIN Includes */
 
 #include "usbd_cdc_if.h" // Plik bedacy interfejsem uzytkownika do kontrolera USB
+#include "../Oth/stm32f411e_discovery.h"
 #include "../Oth/stm32f411e_discovery_accelerometer.h"
 /* USER CODE END Includes */
 
@@ -64,6 +65,15 @@ void rightArm(int n){
 		n=360;
 	htim3.Instance->CCR2 = 280 +  n; // prawy - 280 tył 640 przód
 }
+
+void stopRobot(){
+	while(1){
+		BSP_LED_Toggle(LED3);
+		BSP_LED_Toggle(LED4);
+		BSP_LED_Toggle(LED5);
+		BSP_LED_Toggle(LED6);
+	}
+}
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -78,7 +88,7 @@ int16_t pDataXYZ[3];
 int16_t pDataX = 0;
 int16_t pDataY = 0;
 int16_t pDataZ = 0;
-int i = 0;
+double i = 0;
 float Roll ;
 float Pitch;
 /* USER CODE END PFP */
@@ -143,6 +153,9 @@ int main(void)
 			pDataX = pDataX*9/10 + pDataXYZ[0]*1/10;
 			pDataY = pDataY*9/10 + pDataXYZ[1]*1/10;
 			pDataZ = pDataZ*9/10 + pDataXYZ[2]*1/10;
+
+			Roll = atan2(pDataY, pDataZ) * 180/M_PI;
+			Pitch = atan2(-pDataX, sqrt(pDataY*pDataY + pDataZ*pDataZ)) * 180/M_PI;
 	  	}
 //	  	if(HAL_GPIO_ReadPin(BBLUE_GPIO_Port, BBLUE_Pin) && nIndex > 200+lastIndex){
 //			Dlugosc = sprintf(DataToSend, "Y \r\n");
@@ -166,16 +179,17 @@ int main(void)
 
 //	  htim1.Instance->CCR1 = 300;// +  360-i%360; // prawy - 280 tył 640 przód
 //	  htim1.Instance->CCR2 = 300;// +  i%360; // prawy - 280 tył 640 przód
+	  if(Roll > 45 || Pitch > 45){
+		  stopRobot();
+	  }
 
+	  leftArm(360*((int)i%2));
+	  rightArm(360*((int)i%2));
 
-      Roll = atan2(pDataY, pDataZ) * 180/M_PI;
-      Pitch = atan2(-pDataX, sqrt(pDataY*pDataY + pDataZ*pDataZ)) * 180/M_PI;
-	  leftArm(360*(i%2));
-	  rightArm(360*(i%2));
+	  i = i + 0.002;
+	  nIndex++;
 
-	  i = i + 1;
-
-	  HAL_Delay(2000);
+	  HAL_Delay(10);
   }
   /* USER CODE END 3 */
 }
