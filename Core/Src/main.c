@@ -30,7 +30,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "math.h"
 #include "usbd_cdc_if.h" // Plik bedacy interfejsem uzytkownika do kontrolera USB
 #include "../Oth/stm32f411e_discovery.h"
 #include "../Oth/stm32f411e_discovery_accelerometer.h"
@@ -89,6 +89,7 @@ int16_t pDataX = 0;
 int16_t pDataY = 0;
 int16_t pDataZ = 0;
 double i = 0;
+double stepPerTime;
 float Roll ;
 float Pitch;
 /* USER CODE END PFP */
@@ -185,8 +186,8 @@ int main(void)
 
 	  leftArm(360*((int)i%2));
 	  rightArm(360*((int)i%2));
-
-	  i = i + 0.002;
+	  stepPerTime = 2;
+	  i = i + 0.001*stepPerTime;
 	  nIndex++;
 
 	  HAL_Delay(10);
