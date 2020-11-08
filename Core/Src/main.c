@@ -68,24 +68,37 @@
 #define OFFS 0
 #define DIFF 360
 
+int timeStart = 0;
+int lAt = 10;
+int rAt = 100;
+
 void leftArm(int n){
-	if(n>360)
-		n=360;
+	if(n>DIFF)
+		n=DIFF;
+	if(n<0)
+		n=0;
 //	htim1.Instance->CCR1 = 640 - n; // lewy  - 640 tył 280 przód
 	htim1.Instance->CCR1 = L_MAX - OFFS - n; // lewy  - 640 tył 280 przód
 }
 
 void rightArm(int n){
-	if(n>360)
-		n=360;
+	if(n>DIFF)
+		n=DIFF;
+	if(n<0)
+		n=0;
 //	htim1.Instance->CCR4 = 280 +  n; // prawy - 280 tył 640 przód
 	htim1.Instance->CCR4 = R_MIN + OFFS +  n; // prawy - 280 tył 640 przód
 }
 
 void leg(int n){
-	if(n>360)
-		n=360;
+	if(n>DIFF)
+		n=DIFF;
 	htim3.Instance->CCR2 = 280 +  n; // prawy - 280 tył 640 przód
+}
+
+void timeF(int t){
+	leftArm( DIFF*(t-timeStart)/lAt);
+	rightArm(DIFF*(t-timeStart)/rAt);
 }
 
 void stopRobot(){
@@ -114,6 +127,8 @@ double i = 1;
 double stepPerTime;
 float Roll ;
 float Pitch;
+
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -163,6 +178,16 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1); // PE9
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4); // PE14
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2); // PB5
+  //    PC4 R
+  //    PC5
+  //    PB0 G0
+  //    PB1
+  //    PB2 W0
+  //    PE7
+  //    PE8 B0
+
+  //    PB5
+  timeStart = HAL_GetTick();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -172,60 +197,26 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	  	if(nIndex%10==0){
-//			BSP_ACCELERO_GetXYZ(pDataXYZ);
-//			pDataX = pDataX*9/10 + pDataXYZ[0]*1/10;
-//			pDataY = pDataY*9/10 + pDataXYZ[1]*1/10;
-//			pDataZ = pDataZ*9/10 + pDataXYZ[2]*1/10;
-//
-//			Roll = atan2(pDataY, pDataZ) * 180/M_PI;
-//			Pitch = atan2(-pDataX, sqrt(pDataY*pDataY + pDataZ*pDataZ)) * 180/M_PI;
-//	  	}
 	  	if(HAL_GPIO_ReadPin(BBLUE_GPIO_Port, BBLUE_Pin)){
 			if(i)
 				i = 0;
 			else
-				i = 1;//((int)(i)+5)%200;
+				i = 1;
+			timeStart = HAL_GetTick();
 //			Dlugosc = sprintf(DataToSend, "Y \r\n");
 //			CDC_Transmit_FS(DataToSend, Dlugosc);
 //			lastIndex = nIndex;
 	  	}
-//	  	i = i -1;
-//
-//		nIndex++;
-//	//	HAL_GPIO_TogglePin(LD3_GPIO_Port, LD3_Pin);
-//	//	Dlugosc = sprintf(DataToSend, " X 1000 200 300 ");
-//	//	CDC_Transmit_FS(DataToSend, Dlugosc);
-//		HAL_Delay(1);
-//
+	  timeF(HAL_GetTick());
 
-
-//	  htim1.Instance->CCR1 = 280 +  (360-(i%360)); // prawy - 280 tył 640 przód
-//	  htim3.Instance->CCR2 = 280 +  i%360; // prawy - 280 tył 640 przód
-
-
-//	  htim1.Instance->CCR2 = 280 +  i%360; // prawy - 280 tył 640 przód
-
-//	  htim1.Instance->CCR1 = 300;// +  360-i%360; // prawy - 280 tył 640 przód
-//	  htim1.Instance->CCR2 = 300;// +  i%360; // prawy - 280 tył 640 przód
-
-//	  if(abs(Roll) > 45 || abs(Pitch) > 45){
-//		  stopRobot();
-//	  }
-
+//	  nIndex++;
+//	  HAL_Delay(400);
 //	  leftArm( 110+250*((int)i%2));
 //	  rightArm(110+250*(((int)i)%2));
-	  leftArm( DIFF*((int)i%2));
-	  rightArm(DIFF*((int)i%2));
-	  //HAL_Delay(50);
-	  //leg(55 + 135 + 135*i); // -145 -> 125  270
-
-
-//	  stepPerTime = 4;
-//	  i = i + 0.01*stepPerTime;
-	  nIndex++;
-
-	  HAL_Delay(400);
+//	  leftArm( DIFF*((int)i%2));
+//	  rightArm(DIFF*((int)i%2));
+//	  HAL_Delay(50);
+//	  leg(55 + 135 + 135*i); // -145 -> 125  270
   }
   /* USER CODE END 3 */
 }
