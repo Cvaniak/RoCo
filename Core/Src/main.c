@@ -65,6 +65,11 @@
 #define R_MAX_O 640
 #define R_DIR 640
 
+
+#define B_MIN 300
+#define B_MAX 590
+#define B_DIFF 290
+
 #define OFFS 0
 #define DIFF 360
 
@@ -78,7 +83,7 @@ void leftArm(int n){
 	if(n<0)
 		n=0;
 //	htim1.Instance->CCR1 = 640 - n; // lewy  - 640 tył 280 przód
-	htim1.Instance->CCR1 = L_MAX - OFFS - n; // lewy  - 640 tył 280 przód
+	htim3.Instance->CCR1 = L_MAX - OFFS - n; // lewy  - 640 tył 280 przód
 }
 
 void rightArm(int n){
@@ -91,10 +96,13 @@ void rightArm(int n){
 }
 
 void leg(int n){
-	if(n>DIFF)
-		n=DIFF;
-	htim3.Instance->CCR2 = 280 +  n; // prawy - 280 tył 640 przód
+	if(n>B_DIFF)
+		n=B_DIFF;
+	if(n<0)
+		n=0;
+	htim1.Instance->CCR1 = B_MAX - n; // prawy - 280 tył 640 przód
 }
+
 
 void timeF(int t){
 	leftArm( DIFF*(t-timeStart)/lAt);
@@ -109,6 +117,10 @@ void stopRobot(){
 		BSP_LED_Toggle(LED6);
 	}
 }
+
+void buttons();
+void legs();
+void jump();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -124,6 +136,24 @@ int16_t pDataX = 0;
 int16_t pDataY = 0;
 int16_t pDataZ = 0;
 double i = 1;
+double AA1 = 100;
+double AA2 = 330;
+double AA3 = 330;
+double AA4 = 10;
+double AA5 = 50;
+double AA6 = 200;
+double W1 = 0;
+double W2 = 0;
+double B1 = 0;
+double B2 = 0;
+double G1 = 0;
+double G2 = 0;
+double R0 = 0;
+
+double LF = DIFF;
+double RF = DIFF;
+double BB = 0;
+
 double stepPerTime;
 float Roll ;
 float Pitch;
@@ -178,6 +208,7 @@ int main(void)
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_1); // PE9
   HAL_TIM_PWM_Start(&htim1, TIM_CHANNEL_4); // PE14
   HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_2); // PB5
+  HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1); // PB4
   //    PC4 R
   //    PC5
   //    PB0 G0
@@ -197,27 +228,25 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	  	if(HAL_GPIO_ReadPin(BBLUE_GPIO_Port, BBLUE_Pin)){
-			if(i)
-				i = 0;
-			else
-				i = 1;
-			timeStart = HAL_GetTick();
-//			Dlugosc = sprintf(DataToSend, "Y \r\n");
-//			CDC_Transmit_FS(DataToSend, Dlugosc);
-//			lastIndex = nIndex;
-	  	}
-	  timeF(HAL_GetTick());
 
-//	  nIndex++;
-//	  HAL_Delay(400);
-//	  leftArm( 110+250*((int)i%2));
-//	  rightArm(110+250*(((int)i)%2));
+	  buttons();
+
+//	  rightArm(RF);
+//	  leftArm(RF);
+//	  leg(RF);
+	  legs();
+	  HAL_Delay(1);
+//	  timeF(HAL_GetTick());
+
 //	  leftArm( DIFF*((int)i%2));
 //	  rightArm(DIFF*((int)i%2));
-//	  HAL_Delay(50);
 //	  leg(55 + 135 + 135*i); // -145 -> 125  270
   }
+
+
+  //			Dlugosc = sprintf(DataToSend, "Y \r\n");
+  //			CDC_Transmit_FS(DataToSend, Dlugosc);
+  //			lastIndex = nIndex;
   /* USER CODE END 3 */
 }
 
@@ -274,6 +303,74 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
+void buttons(){
+  	if(HAL_GPIO_ReadPin(BBLUE_GPIO_Port, BBLUE_Pin)) i = 1;
+  	else i = 0;
+
+  	if(HAL_GPIO_ReadPin(ButtonB1_GPIO_Port, ButtonB1_Pin)) BB += 1; // B1 = 1;
+  	else B1 = 0;
+
+  	if(HAL_GPIO_ReadPin(ButtonB2_GPIO_Port, ButtonB2_Pin)) BB -= 1; // B2 = 1;
+  	else B2 = 0;
+
+  	if(HAL_GPIO_ReadPin(ButtonG1_GPIO_Port, ButtonG1_Pin)) LF += 1; // G1 = 1;
+  	else G1 = 0;
+
+  	if(HAL_GPIO_ReadPin(ButtonG2_GPIO_Port, ButtonG2_Pin)) RF += 1; // G2 = 1;
+  	else G2 = 0;
+
+  	if(HAL_GPIO_ReadPin(ButtonW1_GPIO_Port, ButtonW1_Pin)) LF -= 1; // W1 = 1;
+  	else W1 = 0;
+
+  	if(HAL_GPIO_ReadPin(ButtonW2_GPIO_Port, ButtonW2_Pin)) RF -= 1; //  W2 = 1;
+  	else W2 = 0;
+
+  	if(!HAL_GPIO_ReadPin(ButtonR_GPIO_Port, ButtonR_Pin)) jump();
+  	else R0 = 0;
+
+  	if(RF > DIFF) RF = DIFF;
+  	else if(RF < 0) RF = 0;
+  	if(LF > DIFF) LF = DIFF;
+  	else if(LF < 0) LF = 0;
+
+  	if(BB > B_DIFF) BB = B_DIFF;
+  	else if(BB < 0) BB = 0;
+
+//  	{
+//		timeStart = HAL_GetTick();}
+}
+
+void legs(){
+	leftArm(LF);
+	rightArm(RF);
+	leg(BB);
+}
+
+
+
+void jump(){
+//	HAL_Delay(AA2);
+	// AA1 100, -100, -100, 10 50 26 | RF 270 LF 283 BB 16
+	//          -100   100        0  |    194    309    120
+	//                            0  |    187    0      165
+
+	//          -100   100        0  |    194    309    120
+
+	leftArm(LF-AA2);
+	rightArm(RF-AA3);
+	HAL_Delay(AA4);
+	leg(B_DIFF);
+	HAL_Delay(AA1);
+//	HAL_Delay(40);
+	leftArm(LF);
+	rightArm(RF);
+	HAL_Delay(AA5);
+	leg(BB-AA6);
+	HAL_Delay(700);
+//	leftArm(LF);
+	rightArm(RF);
+//	HAL_Delay(100);
+}
 /* USER CODE END 4 */
 
 /**
