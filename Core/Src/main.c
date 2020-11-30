@@ -118,9 +118,13 @@ void stopRobot(){
 	}
 }
 
-void buttons();
+void buttons_handler();
 void legs();
 void jump();
+void jumpL();
+void jumpR();
+void jumpRR();
+void jumpF();
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -229,13 +233,16 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-	  buttons();
+	  buttons_handler();
 
 //	  rightArm(RF);
 //	  leftArm(RF);
 //	  leg(RF);
 	  legs();
 	  HAL_Delay(1);
+	  RF = DIFF;
+	  LF = DIFF;
+	  BB = 0;
 //	  timeF(HAL_GetTick());
 
 //	  leftArm( DIFF*((int)i%2));
@@ -303,26 +310,45 @@ void SystemClock_Config(void)
 
 /* USER CODE BEGIN 4 */
 
-void buttons(){
+void buttons_handler(){
   	if(HAL_GPIO_ReadPin(BBLUE_GPIO_Port, BBLUE_Pin)) i = 1;
   	else i = 0;
+//
+//  	if(HAL_GPIO_ReadPin(ButtonB1_GPIO_Port, ButtonB1_Pin)) BB += 1; // B1 = 1;
+//  	else B1 = 0;
+//
+//  	if(HAL_GPIO_ReadPin(ButtonB2_GPIO_Port, ButtonB2_Pin)) BB -= 1; // B2 = 1;
+//  	else B2 = 0;
+//
+//  	if(HAL_GPIO_ReadPin(ButtonG1_GPIO_Port, ButtonG1_Pin)) LF += 1; // G1 = 1;
+//  	else G1 = 0;
+//
+//  	if(HAL_GPIO_ReadPin(ButtonG2_GPIO_Port, ButtonG2_Pin)) RF += 1; // G2 = 1;
+//  	else G2 = 0;
+//
+//  	if(HAL_GPIO_ReadPin(ButtonW1_GPIO_Port, ButtonW1_Pin)) LF -= 1; // W1 = 1;
+//  	else W1 = 0;
+//
+//  	if(HAL_GPIO_ReadPin(ButtonW2_GPIO_Port, ButtonW2_Pin)) RF -= 1; //  W2 = 1;
+//  	else W2 = 0;
 
-  	if(HAL_GPIO_ReadPin(ButtonB1_GPIO_Port, ButtonB1_Pin)) BB += 1; // B1 = 1;
+
+  	if(!HAL_GPIO_ReadPin(ButtonB1_GPIO_Port, ButtonB1_Pin)) jumpF(); // B1 = 1;
   	else B1 = 0;
 
-  	if(HAL_GPIO_ReadPin(ButtonB2_GPIO_Port, ButtonB2_Pin)) BB -= 1; // B2 = 1;
+  	if(!HAL_GPIO_ReadPin(ButtonB2_GPIO_Port, ButtonB2_Pin)) jumpF(); // B2 = 1;
   	else B2 = 0;
 
-  	if(HAL_GPIO_ReadPin(ButtonG1_GPIO_Port, ButtonG1_Pin)) LF += 1; // G1 = 1;
+  	if(!HAL_GPIO_ReadPin(ButtonG1_GPIO_Port, ButtonG1_Pin)) jumpR(); // G1 = 1;
   	else G1 = 0;
 
-  	if(HAL_GPIO_ReadPin(ButtonG2_GPIO_Port, ButtonG2_Pin)) RF += 1; // G2 = 1;
+  	if(!HAL_GPIO_ReadPin(ButtonG2_GPIO_Port, ButtonG2_Pin)) jumpL(); // G2 = 1;
   	else G2 = 0;
 
-  	if(HAL_GPIO_ReadPin(ButtonW1_GPIO_Port, ButtonW1_Pin)) LF -= 1; // W1 = 1;
+  	if(!HAL_GPIO_ReadPin(ButtonW1_GPIO_Port, ButtonW1_Pin)) jumpRR(); // W1 = 1;
   	else W1 = 0;
 
-  	if(HAL_GPIO_ReadPin(ButtonW2_GPIO_Port, ButtonW2_Pin)) RF -= 1; //  W2 = 1;
+  	if(!HAL_GPIO_ReadPin(ButtonW2_GPIO_Port, ButtonW2_Pin)) jumpLL(); //  W2 = 1;
   	else W2 = 0;
 
   	if(!HAL_GPIO_ReadPin(ButtonR_GPIO_Port, ButtonR_Pin)) jump();
@@ -354,7 +380,7 @@ void jump(){
 	//          -100   100        0  |    194    309    120
 	//                            0  |    187    0      165
 
-	//          -100   100        0  |    194    309    120
+	//          -100   200  50 50 0  |    148    22     76
 
 	leftArm(LF-AA2);
 	rightArm(RF-AA3);
@@ -368,9 +394,119 @@ void jump(){
 	leg(BB-AA6);
 	HAL_Delay(700);
 //	leftArm(LF);
-	rightArm(RF);
+//	rightArm(RF);
 //	HAL_Delay(100);
 }
+
+
+void jumpR(){
+	//	HAL_Delay(AA2);
+		// AA1 100, -100   200  50 50 0  |    148    22     76
+		AA1 = 100;
+		AA2 = -100;
+		AA3 = 200;
+		AA4 = 50;
+		AA5 = 50;
+		AA6 = 0;
+		RF = 148;
+		LF = 22;
+		BB = 70;
+
+		leftArm(LF-AA2);
+		rightArm(RF-AA3);
+		HAL_Delay(AA4);
+		leg(B_DIFF);
+		HAL_Delay(AA1);
+	//	HAL_Delay(40);
+//		leftArm(LF);
+		rightArm(RF);
+		HAL_Delay(AA5);
+		leg(BB-AA6);
+		HAL_Delay(700);
+		leftArm(LF);
+	}
+void jumpRR(){
+	RF = 148;
+	LF = 40;
+	BB = 70;
+	leftArm(LF+50);
+	rightArm(RF-50);
+	leg(BB+15);
+	HAL_Delay(50);
+	leg(BB);
+	HAL_Delay(30);
+	leftArm(LF+300);
+	HAL_Delay(120);
+}
+
+void jumpLL(){
+	RF = 40;
+	LF = 148;
+	BB = 70;
+	rightArm(RF+50);
+	leftArm(LF-50);
+	leg(BB+15);
+	HAL_Delay(50);
+	leg(BB);
+	HAL_Delay(30);
+	rightArm(RF+300);
+	HAL_Delay(120);
+}
+
+void jumpL(){
+	{
+		//	HAL_Delay(AA2);
+			// AA1 100, -100   200  50 50 0  |    148    22     76
+
+		AA1 = 100;
+		AA2 = 200;
+		AA3 = -100;
+		AA4 = 50;
+		AA5 = 50;
+		AA6 = 0;
+		RF = 22;
+		LF = 148;
+		BB = 76;
+			leftArm(LF-AA2);
+			rightArm(RF-AA3);
+			HAL_Delay(AA4);
+			leg(B_DIFF);
+			HAL_Delay(AA1);
+		//	HAL_Delay(40);
+			leftArm(LF);
+//			rightArm(RF);
+			HAL_Delay(AA5);
+			leg(BB-AA6);
+			HAL_Delay(700);
+			rightArm(RF);
+		}
+}
+void jumpF(){
+	//	HAL_Delay(AA2);
+		// AA1 100, -100, -100, 10 50 26 | RF 270 LF 283 BB 16
+
+	AA1 = 100;
+	AA2 = -100;
+	AA3 = -100;
+	AA4 = 10;
+	AA5 = 50;
+	AA6 = 26;
+	RF = 270;
+	LF = 283;
+	BB = 16;
+		leftArm(LF-AA2);
+		rightArm(RF-AA3);
+		HAL_Delay(AA4);
+		leg(B_DIFF);
+		HAL_Delay(AA1);
+	//	HAL_Delay(40);
+		leftArm(LF);
+		rightArm(RF);
+		HAL_Delay(AA5);
+		leg(BB-AA6);
+		HAL_Delay(700);
+	}
+
 /* USER CODE END 4 */
 
 /**
